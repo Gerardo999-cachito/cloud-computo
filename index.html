@@ -20,19 +20,19 @@
       <p class="auth-subtitle">Inicia sesión o regístrate para comenzar.</p>
 
       <!-- Login -->
-      <div id="login-form" class="form-card">
+      <div id="login-form-card" class="form-card">
         <h2>Iniciar Sesión</h2>
-        <input type="email" id="login-email" placeholder="Correo electrónico" />
-        <input type="password" id="login-password" placeholder="Contraseña" />
+        <input type="email" id="login-email" placeholder="Correo electrónico" required />
+        <input type="password" id="login-password" placeholder="Contraseña" required />
         <button onclick="login()">Entrar</button>
         <p>¿No tienes cuenta? <a href="#" onclick="toggleForms(event)">Regístrate aquí</a></p>
       </div>
 
       <!-- Registro -->
-      <div id="register-form" class="form-card hidden">
+      <div id="register-form-card" class="form-card hidden">
         <h2>Registrarse</h2>
-        <input type="email" id="register-email" placeholder="Correo electrónico" />
-        <input type="password" id="register-password" placeholder="Contraseña" />
+        <input type="email" id="register-email" placeholder="Correo electrónico" required />
+        <input type="password" id="register-password" placeholder="Contraseña" required />
         <button onclick="register()">Crear cuenta</button>
         <p>¿Ya tienes cuenta? <a href="#" onclick="toggleForms(event)">Inicia sesión aquí</a></p>
       </div>
