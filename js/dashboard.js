@@ -1,28 +1,14 @@
 const SUPABASE_URL = "https://vtjqtpoaclxuyljzvmny.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // recorta aquí si compartes en público
-
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0anF0cG9hY2x4dXlsanp2bW55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDQyNzUsImV4cCI6MjA3MDA4MDI3NX0.Ro2ed6bwMGML65AraIHZRsGURW5psGdW_KSCiRFXHsk"; // ⚠️ Reemplaza con tu anon public key
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Agrega un nuevo estudiante
+// Registrar estudiante
 async function agregarEstudiante() {
-  const nombreInput = document.getElementById("nombre");
-  const correoInput = document.getElementById("correo");
-  const claseInput = document.getElementById("clase");
+  const nombre = document.getElementById("nombre")?.value;
+  const correo = document.getElementById("correo")?.value;
+  const clase = document.getElementById("clase")?.value;
 
-  if (!nombreInput || !correoInput || !claseInput) {
-    alert("Campos no encontrados en el DOM.");
-    return;
-  }
-
-  const nombre = nombreInput.value;
-  const correo = correoInput.value;
-  const clase = claseInput.value;
-
-  const {
-    data: { user },
-    error: userError,
-  } = await client.auth.getUser();
-
+  const { data: { user }, error: userError } = await client.auth.getUser();
   if (userError || !user) {
     alert("No estás autenticado.");
     return;
@@ -38,7 +24,7 @@ async function agregarEstudiante() {
   if (error) {
     alert("Error al agregar: " + error.message);
   } else {
-    alert("Estudiante agregado");
+    alert("Estudiante agregado correctamente.");
     cargarEstudiantes();
   }
 }
@@ -67,21 +53,17 @@ async function cargarEstudiantes() {
   });
 }
 
-// Subir archivo al bucket
+// Subir archivo
 async function subirArchivo() {
   const archivoInput = document.getElementById("archivo");
-  if (!archivoInput || !archivoInput.files.length) {
-    alert("Selecciona un archivo primero.");
+  const archivo = archivoInput?.files[0];
+
+  if (!archivo) {
+    alert("Selecciona un archivo.");
     return;
   }
 
-  const archivo = archivoInput.files[0];
-
-  const {
-    data: { user },
-    error: userError,
-  } = await client.auth.getUser();
-
+  const { data: { user }, error: userError } = await client.auth.getUser();
   if (userError || !user) {
     alert("Sesión no válida.");
     return;
@@ -103,15 +85,13 @@ async function subirArchivo() {
   }
 }
 
-// Listar archivos del usuario autenticado
+// Listar archivos del usuario
 async function listarArchivos() {
-  const {
-    data: { user },
-    error: userError,
-  } = await client.auth.getUser();
+  const { data: { user }, error: userError } = await client.auth.getUser();
 
   const lista = document.getElementById("lista-archivos");
   if (!lista) return;
+
   lista.innerHTML = "";
 
   if (userError || !user) {
@@ -133,10 +113,7 @@ async function listarArchivos() {
       .from("tareas")
       .createSignedUrl(`${user.id}/${archivo.name}`, 60);
 
-    if (signedUrlError) {
-      console.error("Error al generar URL firmada:", signedUrlError.message);
-      continue;
-    }
+    if (signedUrlError) continue;
 
     const publicUrl = signedUrlData.signedUrl;
     const item = document.createElement("li");
@@ -149,13 +126,11 @@ async function listarArchivos() {
         <strong>${archivo.name}</strong><br>
         <a href="${publicUrl}" target="_blank">
           <img src="${publicUrl}" width="150" style="border:1px solid #ccc; margin:5px;" />
-        </a>
-      `;
+        </a>`;
     } else if (esPDF) {
       item.innerHTML = `
         <strong>${archivo.name}</strong><br>
-        <a href="${publicUrl}" target="_blank">Ver PDF</a>
-      `;
+        <a href="${publicUrl}" target="_blank">Ver PDF</a>`;
     } else {
       item.innerHTML = `<a href="${publicUrl}" target="_blank">${archivo.name}</a>`;
     }
@@ -177,7 +152,7 @@ async function cerrarSesion() {
   }
 }
 
-// Llamadas iniciales
+// Ejecutar funciones al cargar la página
 document.addEventListener("DOMContentLoaded", () => {
   cargarEstudiantes();
   listarArchivos();
