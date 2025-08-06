@@ -1,80 +1,110 @@
+/* Fuente base */
 body {
-  background-color: #f9f9f9;
-  font-family: 'Segoe UI', sans-serif;
-  display: flex;
-  justify-content: center;
-  padding: 40px;
   margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(to right, #dfe9f3, #ffffff);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-.contenedor {
+/* Encabezado */
+.header {
+  background-color: #4a90e2;
+  padding: 20px;
+  text-align: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.logo {
+  color: white;
+  text-decoration: none;
+}
+
+/* Contenido principal */
+.main-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+/* Tarjeta */
+.auth-card {
   background-color: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  padding: 30px 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
   width: 100%;
-  max-width: 600px;
-}
-
-h1, h2 {
-  color: #333;
-  margin-top: 20px;
   text-align: center;
 }
 
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 15px;
+.auth-title {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  color: #333;
 }
 
-input, select {
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
+.auth-subtitle {
+  font-size: 1rem;
+  color: #777;
+  margin-bottom: 25px;
+}
+
+/* Formularios */
+.form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+input[type="email"],
+input[type="password"] {
+  padding: 12px;
   border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+input:focus {
+  border-color: #4a90e2;
 }
 
 button {
-  padding: 10px 15px;
-  background-color: #1f8ef1;
-  color: white;
+  padding: 12px;
   border: none;
   border-radius: 8px;
+  background-color: #4a90e2;
+  color: white;
+  font-size: 1rem;
   cursor: pointer;
-  font-weight: bold;
-  margin-top: 10px;
+  transition: background-color 0.3s;
 }
 
 button:hover {
-  background-color: #0c71c3;
+  background-color: #357abd;
 }
 
-.cerrar-btn {
-  background-color: #e74c3c;
-  display: block;
-  width: 30%;
+p {
+  font-size: 0.9rem;
+  color: #555;
 }
 
-.cerrar:hover {
-  background-color: #c0392b;
+a {
+  color: #4a90e2;
+  text-decoration: none;
 }
 
-ul {
-  list-style: none;
-  padding-left: 0;
+a:hover {
+  text-decoration: underline;
 }
 
-ul li {
-  margin: 10px 0;
-  padding: 8px;
-  background-color: #f3f3f3;
-  border-radius: 6px;
-}
-
-img {
-  display: block;
-  margin-top: 5px;
-  border-radius: 6px;
+.hidden {
+  display: none;
 }
