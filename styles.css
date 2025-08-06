@@ -4,71 +4,57 @@ body {
   font-family: 'Poppins', sans-serif;
   background: linear-gradient(to right, #dfe9f3, #ffffff);
   display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-/* Encabezado */
-.header {
-  background-color: #4a90e2;
-  padding: 20px;
-  text-align: center;
-  color: white;
-  font-weight: 600;
-  font-size: 1.5rem;
-}
-
-.logo {
-  color: white;
-  text-decoration: none;
-}
-
-/* Contenido principal */
-.main-content {
-  flex: 1;
-  display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
   padding: 40px 20px;
 }
 
-/* Tarjeta */
-.auth-card {
+/* Contenedor principal */
+.container {
   background-color: white;
-  padding: 30px 40px;
+  padding: 40px;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
+  max-width: 800px;
   width: 100%;
-  text-align: center;
 }
 
-.auth-title {
-  font-size: 1.8rem;
-  margin-bottom: 10px;
+/* Títulos */
+h1 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 30px;
   color: #333;
 }
 
-.auth-subtitle {
-  font-size: 1rem;
-  color: #777;
-  margin-bottom: 25px;
+h2 {
+  font-size: 1.2rem;
+  color: #4a90e2;
+  margin-bottom: 15px;
 }
 
-/* Formularios */
-.form-card {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+/* Secciones en tarjetas */
+.card {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+/* Inputs */
+input[type="text"],
 input[type="email"],
-input[type="password"],
-input[type="text"] {
+input[type="file"] {
   padding: 12px;
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 1rem;
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 15px;
+  box-sizing: border-box;
   outline: none;
   transition: border-color 0.3s;
 }
@@ -77,8 +63,9 @@ input:focus {
   border-color: #4a90e2;
 }
 
+/* Botones */
 button {
-  padding: 12px;
+  padding: 12px 24px;
   border: none;
   border-radius: 8px;
   background-color: #4a90e2;
@@ -92,11 +79,28 @@ button:hover {
   background-color: #357abd;
 }
 
-p {
-  font-size: 0.9rem;
-  color: #555;
+/* Botón cerrar sesión */
+.cerrar-btn {
+  float: right;
+  margin-bottom: 20px;
 }
 
+/* Listas */
+ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+li {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+/* Links */
 a {
   color: #4a90e2;
   text-decoration: none;
@@ -104,8 +108,4 @@ a {
 
 a:hover {
   text-decoration: underline;
-}
-
-.hidden {
-  display: none;
 }
