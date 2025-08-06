@@ -1,113 +1,165 @@
-import { createClient } from "@supabase/supabase-js";
+const SUPABASE_URL = "https://vtjqtpoaclxuyljzvmny.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0anF0cG9hY2x4dXlsanp2bW55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDQyNzUsImV4cCI6MjA3MDA4MDI3NX0.Ro2ed6bwMGML65AraIHZRsGURW5psGdW_KSCiRFXHsk";
 
-const supabase = createClient(
-  "https://vtjqtpoaclxuyljzvmny.supabase.co",
-  "TU_CLAVE_PUBLICA_AQUI" // Reemplaza con tu clave pública de Supabase
-);
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let uploadTask = null; // referencia para cancelar subida (si decides usarla después)
-
-document.getElementById("formulario").addEventListener("submit", async function (e) {
-  e.preventDefault();
-
-  const archivoInput = document.getElementById("archivo");
-  const archivo = archivoInput?.files[0];
+async function agregarEstudiante() {
+  const nombre = document.getElementById("nombre").value;
+  const correo = document.getElementById("correo").value;
   const clase = document.getElementById("clase").value;
-  const user = supabase.auth.user();
 
-  if (!archivo || !clase || !user) {
-    alert("Faltan datos para subir el archivo.");
+  const {
+    data: { user },
+    error: userError,
+  } = await client.auth.getUser();
+
+  if (userError || !user) {
+    alert("No estás autenticado.");
     return;
   }
 
-  // Sanear el nombre del archivo
-  const nombreSeguro = archivo.name.normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // elimina acentos
-    .replace(/[^\w.\-]+/g, "_");     // reemplaza caracteres especiales por "_"
+  const { error } = await client.from("estudiantes").insert({
+    nombre,
+    correo,
+    clase,
+    user_id: user.id,
+  });
 
-  const nombreRuta = `${user.id}/${nombreSeguro}`;
+  if (error) {
+    alert("Error al agregar: " + error.message);
+  } else {
+    alert("Estudiante agregado");
+    cargarEstudiantes();
+  }
+}
 
-  // Subir a Supabase Storage
-  const { data, error } = await supabase.storage
-    .from("archivos")
+async function cargarEstudiantes() {
+  const { data, error } = await client
+    .from("estudiantes")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    alert("Error al cargar estudiantes: " + error.message);
+    return;
+  }
+
+  const lista = document.getElementById("lista-estudiantes");
+  lista.innerHTML = "";
+  data.forEach((est) => {
+    const item = document.createElement("li");
+    item.textContent = `${est.nombre} (${est.clase})`;
+    lista.appendChild(item);
+  });
+}
+
+cargarEstudiantes();
+
+async function subirArchivo() {
+  const archivoInput = document.getElementById("archivo");
+  const archivo = archivoInput.files[0];
+
+  if (!archivo) {
+    alert("Selecciona un archivo primero.");
+    return;
+  }
+
+  const {
+    data: { user },
+    error: userError,
+  } = await client.auth.getUser();
+
+  if (userError || !user) {
+    alert("Sesión no válida.");
+    return;
+  }
+
+  const nombreRuta = `${user.id}/${archivo.name}`;
+  const { data, error } = await client.storage
+    .from("tareas")
     .upload(nombreRuta, archivo, {
       cacheControl: "3600",
-      upsert: true,
+      upsert: false,
     });
 
   if (error) {
     alert("Error al subir: " + error.message);
+  } else {
+    alert("Archivo subido correctamente.");
+    listarArchivos();
+  }
+}
+
+async function listarArchivos() {
+  const {
+    data: { user },
+    error: userError,
+  } = await client.auth.getUser();
+
+  if (userError || !user) {
+    alert("Sesión no válida.");
     return;
   }
 
-  // Guardar metadata en tabla "estudiantes"
-  const { error: insertError } = await supabase.from("estudiantes").insert([
-    {
-      user_id: user.id,
-      clase: clase,
-      archivo_url: nombreRuta,
-    },
-  ]);
+  const { data, error } = await client.storage
+    .from("tareas")
+    .list(`${user.id}`, { limit: 20 });
 
-  if (insertError) {
-    alert("Error al agregar: " + insertError.message);
-    return;
-  }
-
-  mostrarArchivos();
-});
-
-async function mostrarArchivos() {
   const lista = document.getElementById("lista-archivos");
   lista.innerHTML = "";
 
-  const user = supabase.auth.user();
-  const { data, error } = await supabase
-    .from("estudiantes")
-    .select("*")
-    .eq("user_id", user.id);
-
   if (error) {
-    lista.innerHTML = "Error al cargar archivos.";
+    lista.innerHTML = "<li>Error al listar archivos</li>";
     return;
   }
 
   for (const archivo of data) {
-    const { data: urlData } = supabase.storage
-      .from("archivos")
-      .getPublicUrl(archivo.archivo_url);
+    const { data: signedUrlData, error: signedUrlError } = await client.storage
+      .from("tareas")
+      .createSignedUrl(`${user.id}/${archivo.name}`, 60);
 
-    const publicUrl = urlData.publicUrl;
-    const fileName = archivo.archivo_url.split("/").pop();
-    const esImagen = /\.(jpg|jpeg|png|gif)$/i.test(fileName);
-    const esPDF = /\.pdf$/i.test(fileName);
-    const esDOCX = /\.docx$/i.test(fileName);
+    if (signedUrlError) {
+      console.error("Error al generar URL firmada:", signedUrlError.message);
+      continue;
+    }
 
-    const item = document.createElement("div");
-    item.style.marginBottom = "10px";
+    const publicUrl = signedUrlData.signedUrl;
+
+    const item = document.createElement("li");
+
+    const esImagen = archivo.name.match(/\.(jpg|jpeg|png|gif)$/i);
+    const esPDF = archivo.name.match(/\.pdf$/i);
 
     if (esImagen) {
       item.innerHTML = `
-        <strong>${fileName}</strong><br>
+        <strong>${archivo.name}</strong><br>
         <a href="${publicUrl}" target="_blank">
           <img src="${publicUrl}" width="150" style="border:1px solid #ccc; margin:5px;" />
-        </a>`;
+        </a>
+      `;
     } else if (esPDF) {
       item.innerHTML = `
-        <strong>${fileName}</strong><br>
-        <a href="${publicUrl}" target="_blank">📄 Ver PDF</a>`;
-    } else if (esDOCX) {
-      item.innerHTML = `
-        <strong>${fileName}</strong><br>
-        <a href="${publicUrl}" target="_blank">📄 Ver documento Word</a>`;
+        <strong>${archivo.name}</strong><br>
+        <a href="${publicUrl}" target="_blank">Ver PDF</a>
+      `;
     } else {
-      item.innerHTML = `
-        <strong>${fileName}</strong><br>
-        <a href="${publicUrl}" target="_blank">${fileName}</a>`;
+      item.innerHTML = `<a href="${publicUrl}" target="_blank">${archivo.name}</a>`;
     }
 
     lista.appendChild(item);
   }
 }
 
-mostrarArchivos();
+listarArchivos();
+
+async function cerrarSesion() {
+  const { error } = await client.auth.signOut();
+
+  if (error) {
+    alert("Error al cerrar sesión: " + error.message);
+  } else {
+    localStorage.removeItem("token");
+    alert("Sesión cerrada.");
+    window.location.href = "index.html";
+  }
+}
