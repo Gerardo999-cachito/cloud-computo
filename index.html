@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-<link rel="stylesheet" href="style.css" />
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,7 +20,7 @@
       <p class="auth-subtitle">Inicia sesión o regístrate para comenzar.</p>
 
       <!-- Login -->
-      <div id="login-form-card" class="form-card">
+      <div id="login-form" class="form-card">
         <h2>Iniciar Sesión</h2>
         <input type="email" id="login-email" placeholder="Correo electrónico" />
         <input type="password" id="login-password" placeholder="Contraseña" />
@@ -30,7 +29,7 @@
       </div>
 
       <!-- Registro -->
-      <div id="register-form-card" class="form-card hidden">
+      <div id="register-form" class="form-card hidden">
         <h2>Registrarse</h2>
         <input type="email" id="register-email" placeholder="Correo electrónico" />
         <input type="password" id="register-password" placeholder="Contraseña" />
@@ -42,14 +41,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/auth.js"></script>
-  <script>
-    function toggleForms(event) {
-      event.preventDefault();
-      const loginForm = document.getElementById('login-form-card');
-      const registerForm = document.getElementById('register-form-card');
-      loginForm.classList.toggle('hidden');
-      registerForm.classList.toggle('hidden');
-    }
-  </script>
 </body>
 </html>
