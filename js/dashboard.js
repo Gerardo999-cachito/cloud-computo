@@ -160,7 +160,7 @@ async function listarArchivos() {
     const publicUrl = signedUrlData.signedUrl;
     const item = document.createElement("li");
 
-    const esImagen = /\.(jpg|jpeg|png|gif)$/i.test(archivo.name);
+    const esImagen = /\.(jpg|jpeg|png|gif|docx)$/i.test(archivo.name);
     const esPDF = /\.pdf$/i.test(archivo.name);
 
     if (esImagen) {
