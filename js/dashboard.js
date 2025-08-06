@@ -53,6 +53,17 @@ async function cargarEstudiantes() {
   });
 }
 
+function mostrarBotonCancelar() {
+  const archivoInput = document.getElementById("archivo");
+  const cancelarBtn = document.getElementById("cancelarBtn");
+
+  if (archivoInput.files.length > 0) {
+    cancelarBtn.style.display = "inline-block";
+  } else {
+    cancelarBtn.style.display = "none";
+  }
+}
+
 async function subirArchivo() {
   const archivoInput = document.getElementById("archivo");
   const archivo = archivoInput?.files[0];
@@ -77,7 +88,7 @@ async function subirArchivo() {
 
   try {
     const { error } = await client.storage
-      .from("tareas")
+      .from("tareas") // Asegúrate de que este bucket existe en Supabase
       .upload(nombreRuta, archivo, {
         cacheControl: "3600",
         upsert: false,
@@ -103,6 +114,7 @@ async function subirArchivo() {
     }
   } finally {
     cancelarBtn.style.display = "none";
+    archivoInput.value = ""; // Limpiar input
     controladorCarga = null;
   }
 }
@@ -111,6 +123,10 @@ function cancelarCarga() {
   if (controladorCarga) {
     controladorCarga.abort();
   }
+
+  const archivoInput = document.getElementById("archivo");
+  archivoInput.value = ""; // Elimina archivo seleccionado
+  document.getElementById("cancelarBtn").style.display = "none";
 }
 
 async function listarArchivos() {

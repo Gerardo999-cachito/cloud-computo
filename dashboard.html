@@ -31,8 +31,8 @@
     <!-- Subir archivos -->
     <section class="card">
       <h2>Subir archivo</h2>
-      <input type="file" id="archivo" />
-      <button onclick="subirArchivo()">Subir</button>
+      <input type="file" id="archivo" onchange="mostrarBotonCancelar()" />
+      <button onclick="subirArchivo()" id="subirBtn">Subir</button>
       <button onclick="cancelarCarga()" id="cancelarBtn" style="display:none;">Cancelar</button>
     </section>
 
