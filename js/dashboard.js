@@ -8,7 +8,7 @@ async function agregarEstudiante() {
   const correo = document.getElementById("correo").value.trim();
   const clase = document.getElementById("clase").value.trim();
 
-  if(!nombre || !correo || !clase){
+  if (!nombre || !correo || !clase) {
     alert("Por favor llena todos los campos.");
     return;
   }
@@ -114,7 +114,7 @@ async function editarEstudiante() {
   const nuevoCorreo = document.getElementById("correo").value.trim();
   const nuevaClase = document.getElementById("clase").value.trim();
 
-  if(!nuevoNombre || !nuevoCorreo || !nuevaClase){
+  if (!nuevoNombre || !nuevoCorreo || !nuevaClase) {
     alert("Por favor llena todos los campos.");
     return;
   }
@@ -183,10 +183,11 @@ function cancelarCarga() {
   document.getElementById("cancelarBtn").style.display = "none";
 }
 
+// CORRECCIÓN PRINCIPAL: Función subirArchivo corregida
 async function subirArchivo() {
   const archivoInput = document.getElementById("archivo");
   const archivo = archivoInput.files[0];
-
+  
   if (!archivo) {
     alert("Selecciona un archivo primero.");
     return;
@@ -198,22 +199,19 @@ async function subirArchivo() {
     return;
   }
 
+  // Añadimos timestamp para evitar colisiones de nombres
   const nombreRuta = `${user.id}/${Date.now()}_${archivo.name}`;
-
-  const { data, error } = await client.storage
+  
+  const { error } = await client.storage
     .from("tareas")
-    .upload(nombreRuta, archivo, {
-      cacheControl: "3600",
-      upsert: false,
-    });
-
+    .upload(nombreRuta, archivo, { cacheControl: "3600", upsert: false });
+  
   if (error) {
-    alert("Error al subir: " + error.message);
+    alert("Error al subir archivo: " + error.message);
   } else {
     alert("Archivo subido correctamente.");
-    listarArchivos();
     archivoInput.value = "";
-    document.getElementById("cancelarBtn").style.display = "none";
+    listarArchivos();
   }
 }
 
@@ -284,6 +282,7 @@ async function cerrarSesion() {
 }
 
 // Eventos
+document.getElementById("btnAgregar").addEventListener("click", agregarEstudiante);
 document.getElementById("btnEditar").addEventListener("click", editarEstudiante);
 document.getElementById("btnCancelarEdicion").addEventListener("click", () => {
   limpiarFormulario();
