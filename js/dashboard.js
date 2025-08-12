@@ -30,13 +30,31 @@ async function agregarEstudiante() {
   } else {
     alert("Estudiante agregado");
     cargarEstudiantes();
+    limpiarFormulario();
   }
 }
 
+function limpiarFormulario() {
+  document.getElementById("nombre").value = "";
+  document.getElementById("correo").value = "";
+  document.getElementById("clase").value = "";
+}
+
 async function cargarEstudiantes() {
+  const {
+    data: { user },
+    error: userError,
+  } = await client.auth.getUser();
+
+  if (userError || !user) {
+    alert("No estás autenticado.");
+    return;
+  }
+
   const { data, error } = await client
     .from("estudiantes")
     .select("*")
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -46,14 +64,100 @@ async function cargarEstudiantes() {
 
   const lista = document.getElementById("lista-estudiantes");
   lista.innerHTML = "";
+
   data.forEach((est) => {
     const item = document.createElement("li");
-    item.textContent = `${est.nombre} (${est.clase})`;
+    item.innerHTML = `
+      ${est.nombre} (${est.clase}) - ${est.correo} 
+      <button onclick="mostrarEditar(${est.id}, '${escape(est.nombre)}', '${escape(est.correo)}', '${escape(est.clase)}')">Editar</button> 
+      <button onclick="eliminarEstudiante(${est.id})">Eliminar</button>
+    `;
     lista.appendChild(item);
   });
 }
 
-cargarEstudiantes();
+function mostrarEditar(id, nombre, correo, clase) {
+  nombre = unescape(nombre);
+  correo = unescape(correo);
+  clase = unescape(clase);
+
+  document.getElementById("nombre").value = nombre;
+  document.getElementById("correo").value = correo;
+  document.getElementById("clase").value = clase;
+
+  // Cambiar botón agregar por editar
+  const btnAgregar = document.getElementById("btnAgregar");
+  btnAgregar.style.display = "none";
+
+  const btnEditar = document.getElementById("btnEditar");
+  btnEditar.style.display = "inline";
+  btnEditar.dataset.id = id; // guardamos id para editar
+}
+
+async function editarEstudiante() {
+  const id = this.dataset.id;
+  const nuevoNombre = document.getElementById("nombre").value;
+  const nuevoCorreo = document.getElementById("correo").value;
+  const nuevaClase = document.getElementById("clase").value;
+
+  const {
+    data: { user },
+    error: userError,
+  } = await client.auth.getUser();
+
+  if (userError || !user) {
+    alert("No estás autenticado.");
+    return;
+  }
+
+  const { error } = await client
+    .from("estudiantes")
+    .update({
+      nombre: nuevoNombre,
+      correo: nuevoCorreo,
+      clase: nuevaClase,
+    })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) {
+    alert("Error al editar: " + error.message);
+  } else {
+    alert("Estudiante editado correctamente");
+    cargarEstudiantes();
+    limpiarFormulario();
+    // Restaurar botones
+    document.getElementById("btnEditar").style.display = "none";
+    document.getElementById("btnAgregar").style.display = "inline";
+  }
+}
+
+async function eliminarEstudiante(id) {
+  if (!confirm("¿Seguro que quieres eliminar este estudiante?")) return;
+
+  const {
+    data: { user },
+    error: userError,
+  } = await client.auth.getUser();
+
+  if (userError || !user) {
+    alert("No estás autenticado.");
+    return;
+  }
+
+  const { error } = await client
+    .from("estudiantes")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) {
+    alert("Error al eliminar: " + error.message);
+  } else {
+    alert("Estudiante eliminado");
+    cargarEstudiantes();
+  }
+}
 
 async function subirArchivo() {
   const archivoInput = document.getElementById("archivo");
@@ -150,8 +254,6 @@ async function listarArchivos() {
   }
 }
 
-listarArchivos();
-
 async function cerrarSesion() {
   const { error } = await client.auth.signOut();
 
@@ -163,3 +265,10 @@ async function cerrarSesion() {
     window.location.href = "index.html";
   }
 }
+
+// Asignar evento para editar (se llama desde el botón "Editar" creado dinámicamente)
+document.getElementById("btnEditar").addEventListener("click", editarEstudiante);
+
+// Carga inicial
+cargarEstudiantes();
+listarArchivos();
