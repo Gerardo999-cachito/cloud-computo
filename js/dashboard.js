@@ -67,35 +67,55 @@ async function cargarEstudiantes() {
 
   data.forEach((est) => {
     const item = document.createElement("li");
-    item.innerHTML = `
-      ${est.nombre} (${est.clase}) - ${est.correo} 
-      <button onclick="mostrarEditar(${est.id}, '${escape(est.nombre)}', '${escape(est.correo)}', '${escape(est.clase)}')">Editar</button> 
-      <button onclick="eliminarEstudiante(${est.id})">Eliminar</button>
-    `;
+    item.textContent = `${est.nombre} (${est.clase}) - ${est.correo} `;
+
+    const btnEditar = document.createElement("button");
+    btnEditar.textContent = "Editar";
+    btnEditar.addEventListener("click", () => {
+      mostrarEditar(est.id, est.nombre, est.correo, est.clase);
+    });
+
+    const btnEliminar = document.createElement("button");
+    btnEliminar.textContent = "Eliminar";
+    btnEliminar.addEventListener("click", () => {
+      eliminarEstudiante(est.id);
+    });
+
+    item.appendChild(btnEditar);
+    item.appendChild(document.createTextNode(" "));
+    item.appendChild(btnEliminar);
+
     lista.appendChild(item);
   });
 }
 
 function mostrarEditar(id, nombre, correo, clase) {
-  nombre = unescape(nombre);
-  correo = unescape(correo);
-  clase = unescape(clase);
-
   document.getElementById("nombre").value = nombre;
   document.getElementById("correo").value = correo;
   document.getElementById("clase").value = clase;
 
-  // Cambiar botón agregar por editar
   const btnAgregar = document.getElementById("btnAgregar");
   btnAgregar.style.display = "none";
 
   const btnEditar = document.getElementById("btnEditar");
   btnEditar.style.display = "inline";
-  btnEditar.dataset.id = id; // guardamos id para editar
+  btnEditar.dataset.id = id; // Guardar el id para usarlo en editar
+
+  const btnCancelarEdicion = document.getElementById("btnCancelarEdicion");
+  btnCancelarEdicion.style.display = "inline";
+
+  document.getElementById("form-title").textContent = "Editar estudiante";
 }
 
 async function editarEstudiante() {
-  const id = this.dataset.id;
+  const btnEditar = document.getElementById("btnEditar");
+  const id = btnEditar.dataset.id;
+
+  if (!id) {
+    alert("No hay estudiante seleccionado para editar.");
+    return;
+  }
+
   const nuevoNombre = document.getElementById("nombre").value;
   const nuevoCorreo = document.getElementById("correo").value;
   const nuevaClase = document.getElementById("clase").value;
@@ -126,9 +146,11 @@ async function editarEstudiante() {
     alert("Estudiante editado correctamente");
     cargarEstudiantes();
     limpiarFormulario();
-    // Restaurar botones
-    document.getElementById("btnEditar").style.display = "none";
+    // Restaurar botones y título
+    btnEditar.style.display = "none";
     document.getElementById("btnAgregar").style.display = "inline";
+    document.getElementById("btnCancelarEdicion").style.display = "none";
+    document.getElementById("form-title").textContent = "Registrar estudiante";
   }
 }
 
@@ -266,8 +288,19 @@ async function cerrarSesion() {
   }
 }
 
-// Asignar evento para editar (se llama desde el botón "Editar" creado dinámicamente)
+// Evento para botón editar
 document.getElementById("btnEditar").addEventListener("click", editarEstudiante);
+
+// Evento para botón cancelar edición
+document.getElementById("btnCancelarEdicion").addEventListener("click", () => {
+  limpiarFormulario();
+  document.getElementById("form-title").textContent = "Registrar estudiante";
+  document.getElementById("btnAgregar").style.display = "inline";
+  document.getElementById("btnEditar").style.display = "none";
+  document.getElementById("btnCancelarEdicion").style.display = "none";
+  // Limpiar id de edición
+  document.getElementById("btnEditar").removeAttribute("data-id");
+});
 
 // Carga inicial
 cargarEstudiantes();
