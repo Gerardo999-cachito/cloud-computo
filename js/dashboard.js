@@ -78,16 +78,17 @@ async function cargarEstudiantes() {
     lista.appendChild(item);
   });
 }
-
 function mostrarEditar(id, nombre, correo, clase) {
   document.getElementById("nombre").value = nombre;
   document.getElementById("correo").value = correo;
   document.getElementById("clase").value = clase;
 
   document.getElementById("btnAgregar").style.display = "none";
+
   const btnEditar = document.getElementById("btnEditar");
   btnEditar.style.display = "inline";
-  btnEditar.dataset.id = id;
+  btnEditar.setAttribute("data-id", id);  // <-- importante usar setAttribute
+
   document.getElementById("btnCancelarEdicion").style.display = "inline";
 
   document.getElementById("form-title").textContent = "Editar estudiante";
@@ -95,7 +96,7 @@ function mostrarEditar(id, nombre, correo, clase) {
 
 async function editarEstudiante() {
   const btnEditar = document.getElementById("btnEditar");
-  const id = btnEditar.dataset.id;
+  const id = btnEditar.getAttribute("data-id");  // <-- obtiene id con getAttribute
 
   if (!id) {
     alert("No hay estudiante seleccionado para editar.");
@@ -137,7 +138,6 @@ async function editarEstudiante() {
     btnEditar.removeAttribute("data-id");
   }
 }
-
 async function eliminarEstudiante(id) {
   if (!confirm("¿Seguro que quieres eliminar este estudiante?")) return;
 
