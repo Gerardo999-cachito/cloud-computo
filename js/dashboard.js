@@ -35,6 +35,9 @@ function limpiarFormulario() {
   document.getElementById("nombre").value = "";
   document.getElementById("correo").value = "";
   document.getElementById("clase").value = "";
+  // Limpiar input archivo si quieres:
+  const archivoInput = document.getElementById("archivo");
+  if(archivoInput) archivoInput.value = "";
 }
 
 async function cargarEstudiantes() {
@@ -78,6 +81,7 @@ async function cargarEstudiantes() {
     lista.appendChild(item);
   });
 }
+
 function mostrarEditar(id, nombre, correo, clase) {
   document.getElementById("nombre").value = nombre;
   document.getElementById("correo").value = correo;
@@ -87,7 +91,7 @@ function mostrarEditar(id, nombre, correo, clase) {
 
   const btnEditar = document.getElementById("btnEditar");
   btnEditar.style.display = "inline";
-  btnEditar.setAttribute("data-id", id);  // <-- importante usar setAttribute
+  btnEditar.setAttribute("data-id", id);
 
   document.getElementById("btnCancelarEdicion").style.display = "inline";
 
@@ -96,7 +100,7 @@ function mostrarEditar(id, nombre, correo, clase) {
 
 async function editarEstudiante() {
   const btnEditar = document.getElementById("btnEditar");
-  const id = btnEditar.getAttribute("data-id");  // <-- obtiene id con getAttribute
+  const id = btnEditar.getAttribute("data-id");
 
   if (!id) {
     alert("No hay estudiante seleccionado para editar.");
@@ -138,6 +142,7 @@ async function editarEstudiante() {
     btnEditar.removeAttribute("data-id");
   }
 }
+
 async function eliminarEstudiante(id) {
   if (!confirm("¿Seguro que quieres eliminar este estudiante?")) return;
 
@@ -162,6 +167,97 @@ async function eliminarEstudiante(id) {
   }
 }
 
+async function subirArchivo() {
+  const archivoInput = document.getElementById("archivo");
+  const archivo = archivoInput.files[0];
+
+  if (!archivo) {
+    alert("Selecciona un archivo primero.");
+    return;
+  }
+
+  const { data: { user }, error: userError } = await client.auth.getUser();
+
+  if (userError || !user) {
+    alert("Sesión no válida.");
+    return;
+  }
+
+  const nombreRuta = `${user.id}/${Date.now()}_${archivo.name}`;
+
+  const { data, error } = await client.storage
+    .from("tareas")
+    .upload(nombreRuta, archivo, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+
+  if (error) {
+    alert("Error al subir: " + error.message);
+  } else {
+    alert("Archivo subido correctamente.");
+    listarArchivos();
+    archivoInput.value = ""; // limpiar input
+  }
+}
+
+async function listarArchivos() {
+  const { data: { user }, error: userError } = await client.auth.getUser();
+
+  if (userError || !user) {
+    alert("Sesión no válida.");
+    return;
+  }
+
+  const { data, error } = await client.storage
+    .from("tareas")
+    .list(user.id, { limit: 100, offset: 0 });
+
+  const lista = document.getElementById("lista-archivos");
+  lista.innerHTML = "";
+
+  if (error) {
+    lista.innerHTML = "<li>Error al listar archivos</li>";
+    return;
+  }
+
+  for (const archivo of data) {
+    const { data: signedUrlData, error: signedUrlError } = await client.storage
+      .from("tareas")
+      .createSignedUrl(`${user.id}/${archivo.name}`, 60);
+
+    if (signedUrlError) {
+      console.error("Error al generar URL firmada:", signedUrlError.message);
+      continue;
+    }
+
+    const publicUrl = signedUrlData.signedUrl;
+
+    const item = document.createElement("li");
+
+    const esImagen = archivo.name.match(/\.(jpg|jpeg|png|gif)$/i);
+    const esPDF = archivo.name.match(/\.pdf$/i);
+
+    if (esImagen) {
+      item.innerHTML = `
+        <strong>${archivo.name}</strong><br>
+        <a href="${publicUrl}" target="_blank">
+          <img src="${publicUrl}" width="150" style="border:1px solid #ccc; margin:5px;" />
+        </a>
+      `;
+    } else if (esPDF) {
+      item.innerHTML = `
+        <strong>${archivo.name}</strong><br>
+        <a href="${publicUrl}" target="_blank">Ver PDF</a>
+      `;
+    } else {
+      item.innerHTML = `<a href="${publicUrl}" target="_blank">${archivo.name}</a>`;
+    }
+
+    lista.appendChild(item);
+  }
+}
+
 async function cerrarSesion() {
   const { error } = await client.auth.signOut();
 
@@ -173,7 +269,7 @@ async function cerrarSesion() {
   }
 }
 
-// Event listeners
+// Eventos
 document.getElementById("btnEditar").addEventListener("click", editarEstudiante);
 document.getElementById("btnCancelarEdicion").addEventListener("click", () => {
   limpiarFormulario();
@@ -184,5 +280,6 @@ document.getElementById("btnCancelarEdicion").addEventListener("click", () => {
   document.getElementById("btnEditar").removeAttribute("data-id");
 });
 
-// Inicializar lista de estudiantes
+// Carga inicial
 cargarEstudiantes();
+listarArchivos();
