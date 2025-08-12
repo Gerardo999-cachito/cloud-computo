@@ -4,12 +4,16 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function agregarEstudiante() {
-  const nombre = document.getElementById("nombre").value;
-  const correo = document.getElementById("correo").value;
-  const clase = document.getElementById("clase").value;
+  const nombre = document.getElementById("nombre").value.trim();
+  const correo = document.getElementById("correo").value.trim();
+  const clase = document.getElementById("clase").value.trim();
+
+  if(!nombre || !correo || !clase){
+    alert("Por favor llena todos los campos.");
+    return;
+  }
 
   const { data: { user }, error: userError } = await client.auth.getUser();
-
   if (userError || !user) {
     alert("No estás autenticado.");
     return;
@@ -35,14 +39,12 @@ function limpiarFormulario() {
   document.getElementById("nombre").value = "";
   document.getElementById("correo").value = "";
   document.getElementById("clase").value = "";
-  // Limpiar input archivo si quieres:
   const archivoInput = document.getElementById("archivo");
-  if(archivoInput) archivoInput.value = "";
+  if (archivoInput) archivoInput.value = "";
 }
 
 async function cargarEstudiantes() {
   const { data: { user }, error: userError } = await client.auth.getUser();
-
   if (userError || !user) {
     alert("No estás autenticado.");
     return;
@@ -64,7 +66,7 @@ async function cargarEstudiantes() {
 
   data.forEach((est) => {
     const item = document.createElement("li");
-    item.textContent = `${est.nombre} (${est.clase}) - ${est.correo} `;
+    item.textContent = `${est.nombre} (${est.clase}) - ${est.correo}`;
 
     const btnEditar = document.createElement("button");
     btnEditar.textContent = "Editar";
@@ -74,6 +76,7 @@ async function cargarEstudiantes() {
     btnEliminar.textContent = "Eliminar";
     btnEliminar.onclick = () => eliminarEstudiante(est.id);
 
+    item.appendChild(document.createTextNode(" "));
     item.appendChild(btnEditar);
     item.appendChild(document.createTextNode(" "));
     item.appendChild(btnEliminar);
@@ -107,12 +110,16 @@ async function editarEstudiante() {
     return;
   }
 
-  const nuevoNombre = document.getElementById("nombre").value;
-  const nuevoCorreo = document.getElementById("correo").value;
-  const nuevaClase = document.getElementById("clase").value;
+  const nuevoNombre = document.getElementById("nombre").value.trim();
+  const nuevoCorreo = document.getElementById("correo").value.trim();
+  const nuevaClase = document.getElementById("clase").value.trim();
+
+  if(!nuevoNombre || !nuevoCorreo || !nuevaClase){
+    alert("Por favor llena todos los campos.");
+    return;
+  }
 
   const { data: { user }, error: userError } = await client.auth.getUser();
-
   if (userError || !user) {
     alert("No estás autenticado.");
     return;
@@ -147,7 +154,6 @@ async function eliminarEstudiante(id) {
   if (!confirm("¿Seguro que quieres eliminar este estudiante?")) return;
 
   const { data: { user }, error: userError } = await client.auth.getUser();
-
   if (userError || !user) {
     alert("No estás autenticado.");
     return;
@@ -167,6 +173,16 @@ async function eliminarEstudiante(id) {
   }
 }
 
+function mostrarBotonCancelar() {
+  document.getElementById("cancelarBtn").style.display = "inline";
+}
+
+function cancelarCarga() {
+  const archivoInput = document.getElementById("archivo");
+  archivoInput.value = "";
+  document.getElementById("cancelarBtn").style.display = "none";
+}
+
 async function subirArchivo() {
   const archivoInput = document.getElementById("archivo");
   const archivo = archivoInput.files[0];
@@ -177,7 +193,6 @@ async function subirArchivo() {
   }
 
   const { data: { user }, error: userError } = await client.auth.getUser();
-
   if (userError || !user) {
     alert("Sesión no válida.");
     return;
@@ -197,13 +212,13 @@ async function subirArchivo() {
   } else {
     alert("Archivo subido correctamente.");
     listarArchivos();
-    archivoInput.value = ""; // limpiar input
+    archivoInput.value = "";
+    document.getElementById("cancelarBtn").style.display = "none";
   }
 }
 
 async function listarArchivos() {
   const { data: { user }, error: userError } = await client.auth.getUser();
-
   if (userError || !user) {
     alert("Sesión no válida.");
     return;
@@ -260,7 +275,6 @@ async function listarArchivos() {
 
 async function cerrarSesion() {
   const { error } = await client.auth.signOut();
-
   if (error) {
     alert("Error al cerrar sesión: " + error.message);
   } else {
